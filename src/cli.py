@@ -1,38 +1,60 @@
-import argparse
-from azure_archival import AzureArchival
-from aws_archival import AWSArchival
+import click
+import logging
+from src.archival_manager import ArchivalManager
+from src.utils.secrets import SecretsManager
+from utils.tracability import Traceability
 
-def main():
-    parser = argparse.ArgumentParser(description='Data Archival Script')
-    parser.add_argument('--azure', action='store_true', help='Manage archival for Azure ADLS')
-    parser.add_argument('--aws', action='store_true', help='Manage archival for AWS S3')
-    parser.add_argument('--file-system', help='ADLS file system name (required for Azure)')
-    parser.add_argument('--bucket', help='S3 bucket name (required for AWS)')
-    parser.add_argument('--data-type', choices=['real_time', 'reference', 'archival'], required=True, help='Type of data to manage')
-    args = parser.parse_args()
+class CLI:
+    def __init__(self):
+        self.traceability = Traceability()
 
-    if args.azure:
-        if not args.file_system:
-            parser.error('--file-system is required for Azure ADLS')
-        archival = AzureArchival(file_system_name=args.file_system)
-        if args.data_type == 'real_time':
-            archival.archive_data('real_time')
-        elif args.data_type == 'reference':
-            archival.archive_data('reference')
-        elif args.data_type == 'archival':
-            archival.archive_data('archival')
-    elif args.aws:
-        if not args.bucket:
-            parser.error('--bucket is required for AWS S3')
-        archival = AWSArchival(bucket_name=args.bucket)
-        if args.data_type == 'real_time':
-            archival.archive_data('real_time')
-        elif args.data_type == 'reference':
-            archival.archive_data('reference')
-        elif args.data_type == 'archival':
-            archival.archive_data('archival')
-    else:
-        parser.error('Either --azure or --aws must be specified')
+    def run(self):
+        try:
+            cli()
+            self.traceability.log_movement("CLI", "run", "path_placeholder")
+        except Exception as e:
+            self.traceability.log_movement("CLI", "run", "path_placeholder", status="failure", error_message=str(e))
 
-if __name__ == "__main__":
-    main()
+@click.group()
+def cli():
+    """
+    CLI group to hold archival commands.
+    """
+    pass
+
+@click.command()
+@click.argument('file_path')
+@click.argument('object_name')
+def archive_to_aws(file_path, object_name):
+    """
+    Command to archive a file to AWS S3.
+
+    :param file_path: Path to the file to be archived.
+    :param object_name: Name of the object in S3.
+    """
+    secrets_manager = SecretsManager()
+    aws_secrets = secrets_manager.get_aws_secrets('my_aws_secret', 'us-west-2')
+    archival_manager = ArchivalManager(aws_config=aws_secrets, azure_config={})
+    archival_manager.archive_to_aws(file_path, object_name)
+
+@click.command()
+@click.argument('file_path')
+@click.argument('blob_name')
+def archive_to_azure(file_path, blob_name):
+    """
+    Command to archive a file to Azure Blob Storage.
+
+    :param file_path: Path to the file to be archived.
+    :param blob_name: Name of the blob in Azure Blob Storage.
+    """
+    secrets_manager = SecretsManager()
+    azure_secrets = secrets_manager.get_azure_secrets('my_azure_secret', 'my_key_vault')
+    archival_manager = ArchivalManager(aws_config={}, azure_config=azure_secrets)
+    archival_manager.archive_to_azure(file_path, blob_name)
+
+cli.add_command(archive_to_aws)
+cli.add_command(archive_to_azure)
+
+if __name__ == '__main__':
+    cli_instance = CLI()
+    cli_instance.run()

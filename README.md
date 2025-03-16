@@ -1,5 +1,7 @@
 # RetainX
 
+RetainX is a tool for managing archival operations for both AWS and Azure.
+
 ## Overview
 The RetainX Module is designed to manage data lifecycle policies for Azure Data Lake Storage (ADLS) and AWS S3. It automates the process of moving, retaining, or deleting data based on predefined policies, optimizing costs and storage utilization. The module categorizes data into three levels:
 
@@ -8,11 +10,16 @@ The RetainX Module is designed to manage data lifecycle policies for Azure Data 
 3. **Archival Data**: Retained for 10 years and then cleaned up. This includes any data accessed in the last 10 years.
 
 ## Features
+- Archive files to AWS S3
+- Archive files to Azure Blob Storage
+- Restore archived files
+- Delete archived files
 - Automated lifecycle management for Azure ADLS and AWS S3.
 - Efficient data categorization and retention policies.
 - Clear logging and error handling for all operations.
 - Command-line interface for easy interaction.
 - Secure access to credentials using AWS Secrets Manager and Azure Key Vault.
+- Detailed traceability for all operations.
 
 ## Installation
 To install the required dependencies, run the following command:
@@ -22,6 +29,35 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### CLI Commands
+
+RetainX provides a CLI for managing archival operations.
+
+#### Archive to AWS
+
+To archive a file to AWS S3, use the following command:
+
+```bash
+python src/cli.py archive_to_aws <file_path> <object_name>
+```
+
+#### Archive to Azure Blob Storage
+
+To archive a file to Azure Blob Storage, use the following command:
+
+```bash
+python src/cli.py archive_to_azure <file_path> <blob_name>
+```
+
+#### Archive to Azure Data Lake Storage
+
+To archive data in Azure Data Lake Storage, use the following command:
+
+```bash
+python src/cli.py archive_to_adls <file_system_name> <data_type>
+```
+
 ### Command-Line Interface
 The module provides a CLI for users to interact with the archival functionalities. You can run the CLI with the following command:
 
@@ -48,13 +84,24 @@ python src/cli.py [options]
    python src/cli.py --aws --bucket your-bucket-name --data-type reference
    ```
 
-## Logging
+3. **Archiving a File to Azure Blob Storage**:
+   ```bash
+   python src/cli.py archive_to_azure <file_path> <blob_name>
+   ```
+
+### Configuration
+
+RetainX uses AWS Secrets Manager and Azure Key Vault to manage secrets. Ensure that the necessary secrets are stored in the respective services.
+
+## Logging and Traceability
 The module includes logging utilities to track operations. Logs are generated for:
 - Information messages
 - Warnings
 - Errors
 
 Logs can be found in the specified log file as defined in the `logger.py` utility.
+
+The module also includes traceability features to log the movement of data across different storage tiers and operations. This ensures a detailed audit trail for all actions performed.
 
 ## Error Handling
 The module implements robust error handling to ensure that any issues encountered during the archival process are logged and reported appropriately.
@@ -69,4 +116,4 @@ The module implements robust error handling to ensure that any issues encountere
 Contributions to the module are welcome. Please submit a pull request or open an issue for any enhancements or bug fixes.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
