@@ -58,6 +58,14 @@ To archive data in Azure Data Lake Storage, use the following command:
 python src/cli.py archive_to_adls <file_system_name> <data_type>
 ```
 
+#### Auto Archive
+
+To auto archive all qualifying blobs or buckets based on their data type, use the following command:
+
+```bash
+python src/cli.py auto_archive <data_type>
+```
+
 ### Command-Line Interface
 The module provides a CLI for users to interact with the archival functionalities. You can run the CLI with the following command:
 
@@ -87,6 +95,11 @@ python src/cli.py [options]
 3. **Archiving a File to Azure Blob Storage**:
    ```bash
    python src/cli.py archive_to_azure <file_path> <blob_name>
+   ```
+
+4. **Auto Archiving All Qualifying Blobs or Buckets**:
+   ```bash
+   python src/cli.py auto_archive <data_type>
    ```
 
 ### Configuration
